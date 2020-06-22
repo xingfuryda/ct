@@ -89,7 +89,7 @@
             // add marker to map
             var marker = new mapboxgl.Marker(el)
                 .setLngLat(marker.geometry.coordinates)
-                .setPopup(new mapboxgl.Popup({closeButton: false}).setHTML(marker.properties['cmt']))
+                .setPopup(new mapboxgl.Popup({closeButton: false, closeOnClick: false}).setHTML(marker.properties['cmt']))
                 .addTo(map);
 
             marker.togglePopup();
