@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <script src="https://cdn.maptiler.com/mapbox-gl-js/v1.5.1/mapbox-gl.js"></script>
+  <link href="https://cdn.maptiler.com/mapbox-gl-js/v1.5.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    #map {position: absolute; top: 0; right: 0; bottom: 0; left: 0;}
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://xingfuryda.github.io/ct/data/track_1.js"></script>
+  <script src="https://xingfuryda.github.io/ct/data/miles_3.js"></script>
+  <script src="https://xingfuryda.github.io/ct/data/waypoints_2.js"></script>
+  <script>
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'https://api.maptiler.com/maps/topo/style.json?key=QCQKp0xVniJ5mmxYg92Q',
+      center: [-105.09670, 39.10141],
+      zoom: 7.42
+    });
+
+    map.on('load', function() {
+        map.addSource('route', 
+            {
+                type: 'geojson',
+                data: json_track_1.features[0]                
+            }
+        )
+
+        map.addSource('points', 
+            {
+                type: 'geojson',
+                data: {
+                    'type': 'FeatureCollection',
+                    'features': json_waypoints_2.features
+                }                             
+            }
+        )
+
+        map.addLayer({
+            'id': 'route',
+            'type': 'line',
+            'source': 'route',
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': 'rgba(255,96,17,1.0)',
+                'line-width': 2
+            }
+        });
+
+        map.addLayer({
+            'id': 'points',
+            'type': 'circle',
+            'source': 'points',
+            'paint': {
+                'circle-color': '#000000',
+                'circle-radius': 2
+            }
+        });
+
+        map.addLayer({
+            id: 'points_label',
+            type: 'symbol',
+            source: 'points',
+            layout: {
+                'text-field': ['get', 'cmt'],
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 12,
+                'text-anchor': 'top'
+            }
+        });
+
+        // mile markers
+        // add markers to map
+        json_miles_3.features.forEach(function(marker) {
+            // create a DOM element for the marker
+            var el = document.createElement('div');
+            el.className = 'marker';
+            el.style.backgroundImage =
+            'url(https://xingfuryda.github.io/ct/legend/waypoints_2.png)';
+            el.style.width = '15px';
+            el.style.height = '15px';
+            
+            // add marker to map
+            var marker = new mapboxgl.Marker(el)
+                .setLngLat(marker.geometry.coordinates)
+                .setPopup(new mapboxgl.Popup({closeButton: false}).setHTML(marker.properties['cmt']))
+                .addTo(map);
+
+            marker.togglePopup();
+        });
+
+        
+    });
+
+    
+    map.addControl(new mapboxgl.NavigationControl());
+  </script>
+</body>
+</html>
