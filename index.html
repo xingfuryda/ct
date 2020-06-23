@@ -6,6 +6,9 @@
   <link href="https://cdn.maptiler.com/mapbox-gl-js/v1.5.1/mapbox-gl.css" rel="stylesheet" />
   <style>
     #map {position: absolute; top: 0; right: 0; bottom: 0; left: 0;}
+    .mapboxgl-popup-tip { display: none; }
+    .mapboxgl-popup-content { padding: 3px; opacity: 0.8}
+    .resupply { padding: 0; margin: 0; background: lightgreen; }
   </style>
 </head>
 <body>
@@ -13,6 +16,7 @@
   <script src="https://xingfuryda.github.io/ct/data/track_1.js"></script>
   <script src="https://xingfuryda.github.io/ct/data/miles_3.js"></script>
   <script src="https://xingfuryda.github.io/ct/data/waypoints_2.js"></script>
+  <script src="https://xingfuryda.github.io/ct/data/resupply_4.js"></script>
   <script>
     var map = new mapboxgl.Map({
       container: 'map',
@@ -76,7 +80,25 @@
         });
 
         // mile markers
-        // add markers to map
+        json_resupply_4.features.forEach(function(marker) {
+            // create a DOM element for the marker
+            var el = document.createElement('div');
+            el.className = 'resupplymarker';
+            el.style.backgroundImage =
+            'url(https://xingfuryda.github.io/ct/legend/waypoints_2.png)';
+            el.style.width = '15px';
+            el.style.height = '15px';
+            
+            // add marker to map
+            var marker = new mapboxgl.Marker(el)
+                .setLngLat(marker.geometry.coordinates)
+                .setPopup(new mapboxgl.Popup({closeButton: false, closeOnClick: false}).setHTML('<p class="resupply">' + marker.properties['name'] + '</p>'))
+                .addTo(map);
+
+            marker.togglePopup();
+        });
+
+        // resupply markers
         json_miles_3.features.forEach(function(marker) {
             // create a DOM element for the marker
             var el = document.createElement('div');
@@ -93,9 +115,7 @@
                 .addTo(map);
 
             marker.togglePopup();
-        });
-
-        
+        });        
     });
 
     
