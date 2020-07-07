@@ -12,7 +12,7 @@
     .menu-ui {
     background:#fff;
     position:absolute;
-    top:10px;right:10px;
+    top:10px;right:50px;
     z-index:1;
     border-radius:3px;
     width:120px;
@@ -59,27 +59,37 @@
     var map = new mapboxgl.Map({
       container: 'map',
       center: [-105.09670, 39.10141],
-      zoom: 7.42
+      zoom: 7.42,
+      style: {
+        version: 8,
+        glyphs: "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=QCQKp0xVniJ5mmxYg92Q",
+        sources: {
+            imagery: {
+            type: "raster",
+            tiles: [
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            ],
+            tileSize: 256,
+            }
+        },
+        layers: [
+            {
+            id: "imagery",
+            type: "raster",
+            source: "imagery",
+            }
+        ]
+      }
     });
 
     map.on('load', function() {
-        map.addSource('imagery', 
-            {
-                type: "raster",
-                tiles: [
-                  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                ],
-                tileSize: 256,
-            }
-        )
-
         map.addSource('outdoor', 
             {
                 type: "raster",
                 tiles: [
                   "https://a-naturalatlas-tiles.global.ssl.fastly.net/topo/{z}/{x}/{y}/t@2x.jpg"
                 ],
-                tileSize: 512,
+                tileSize: 256,
             }
         )
 
@@ -99,12 +109,6 @@
                 }                             
             }
         )
-
-        map.addLayer({
-            'id': 'imagery',
-            'type': 'raster',
-            'source': 'imagery',            
-        });
 
         map.addLayer({
             'id': 'outdoor',
@@ -145,6 +149,10 @@
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12,
                 'text-anchor': 'top'
+            },
+            paint: {
+                'text-halo-color': 'white',
+                'text-halo-width': 2
             }
         });
 
@@ -187,38 +195,34 @@
         });        
     });
 
-    //var layers = document.getElementById('menu-ui');
-    // addLayer(L.mapbox.styleLayer('https://api.maptiler.com/maps/topo/style.json?key=QCQKp0xVniJ5mmxYg92Q'), 'Base Map', 1);
-    // addLayer(L.mapbox.tileLayer('examples.bike-lanes'), 'Bike Lanes', 2);
-    // addLayer(L.mapbox.tileLayer('examples.bike-locations'), 'Bike Stations', 3);
+    var layers = document.getElementById('menu-ui');
+    addLayer('imagery');
+    addLayer('outdoor');
 
-    // function addLayer(layer, name, zIndex) {
-    //     layer
-    //         .setZIndex(zIndex)
-    //         .addTo(map);
+    function addLayer(name) {
 
-    //     // Create a simple layer switcher that
-    //     // toggles layers on and off.
-    //     var link = document.createElement('a');
-    //         link.href = '#';
-    //         link.className = 'active';
-    //         link.innerHTML = name;
+        // Create a simple layer switcher that
+        // toggles layers on and off.
+        var link = document.createElement('a');
+            link.href = '#';
+            link.className = 'active';
+            link.innerHTML = name;
 
-    //     link.onclick = function(e) {
-    //         e.preventDefault();
-    //         e.stopPropagation();
+        link.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-    //         if (map.hasLayer(layer)) {
-    //             map.removeLayer(layer);
-    //             this.className = '';
-    //         } else {
-    //             map.addLayer(layer);
-    //             this.className = 'active';
-    //         }
-    //     };
+            if (this.className == 'active') {
+                map.setLayoutProperty(name, 'visibility', 'none');
+                this.className = '';
+            } else {
+                map.setLayoutProperty(name, 'visibility', 'visible');
+                this.className = 'active';
+            }
+        };
 
-    //     layers.appendChild(link);
-    // }
+        layers.appendChild(link);
+    }
     
     map.addControl(new mapboxgl.NavigationControl());
     map.addControl(new mapboxgl.ScaleControl({unit: 'imperial'}));
