@@ -9,9 +9,47 @@
     .mapboxgl-popup-tip { display: none; }
     .mapboxgl-popup-content { padding: 3px; opacity: 0.8}
     .resupply { padding: 0; margin: 0; background: lightgreen; }
+    .menu-ui {
+    background:#fff;
+    position:absolute;
+    top:10px;right:50px;
+    z-index:1;
+    border-radius:3px;
+    width:120px;
+    border:1px solid rgba(0,0,0,0.4);
+    }
+    .menu-ui a {
+    font-size:13px;
+    color:#404040;
+    display:block;
+    margin:0;padding:0;
+    padding:10px;
+    text-decoration:none;
+    border-bottom:1px solid rgba(0,0,0,0.25);
+    text-align:center;
+    }
+    .menu-ui a:first-child {
+    border-radius:3px 3px 0 0;
+    }
+    .menu-ui a:last-child {
+    border:none;
+    border-radius:0 0 3px 3px;
+    }
+    .menu-ui a:hover {
+    background:#f8f8f8;
+    color:#404040;
+    }
+    .menu-ui a.active {
+    background:#3887BE;
+    color:#FFF;
+    }
+    .menu-ui a.active:hover {
+    background:#3074a4;
+    }
   </style>
 </head>
 <body>
+  <nav id='menu-ui' class='menu-ui'></nav>
   <div id="map"></div>
   <script src="https://xingfuryda.github.io/ct/data/track_1.js"></script>
   <script src="https://xingfuryda.github.io/ct/data/miles_3.js"></script>
@@ -20,12 +58,41 @@
   <script>
     var map = new mapboxgl.Map({
       container: 'map',
-      style: 'https://api.maptiler.com/maps/topo/style.json?key=QCQKp0xVniJ5mmxYg92Q',
       center: [-105.09670, 39.10141],
-      zoom: 7.42
+      zoom: 7.42,
+      style: {
+        version: 8,
+        glyphs: "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=QCQKp0xVniJ5mmxYg92Q",
+        sources: {
+            imagery: {
+            type: "raster",
+            tiles: [
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            ],
+            tileSize: 256,
+            }
+        },
+        layers: [
+            {
+            id: "imagery",
+            type: "raster",
+            source: "imagery",
+            }
+        ]
+      }
     });
 
     map.on('load', function() {
+        map.addSource('outdoor', 
+            {
+                type: "raster",
+                tiles: [
+                  "https://a-naturalatlas-tiles.global.ssl.fastly.net/topo/{z}/{x}/{y}/t@2x.jpg"
+                ],
+                tileSize: 256,
+            }
+        )
+
         map.addSource('route', 
             {
                 type: 'geojson',
@@ -42,6 +109,12 @@
                 }                             
             }
         )
+
+        map.addLayer({
+            'id': 'outdoor',
+            'type': 'raster',
+            'source': 'outdoor',            
+        });
 
         map.addLayer({
             'id': 'route',
@@ -76,6 +149,10 @@
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12,
                 'text-anchor': 'top'
+            },
+            paint: {
+                'text-halo-color': 'white',
+                'text-halo-width': 2
             }
         });
 
@@ -118,10 +195,37 @@
         });        
     });
 
+    var layers = document.getElementById('menu-ui');
+    addLayer('imagery');
+    addLayer('outdoor');
+
+    function addLayer(name) {
+
+        // Create a simple layer switcher that
+        // toggles layers on and off.
+        var link = document.createElement('a');
+            link.href = '#';
+            link.className = 'active';
+            link.innerHTML = name;
+
+        link.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (this.className == 'active') {
+                map.setLayoutProperty(name, 'visibility', 'none');
+                this.className = '';
+            } else {
+                map.setLayoutProperty(name, 'visibility', 'visible');
+                this.className = 'active';
+            }
+        };
+
+        layers.appendChild(link);
+    }
     
     map.addControl(new mapboxgl.NavigationControl());
     map.addControl(new mapboxgl.ScaleControl({unit: 'imperial'}));
-
   </script>
 </body>
 </html>
